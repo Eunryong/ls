@@ -1,11 +1,34 @@
 #include "ft_ls.h"
 
-void* ft_realloc(void* src, size_t size) {
-    void* ret = malloc(size);
-    if (src == NULL) return ret;
-    ft_memcpy(ret, src, size);
+void* ft_realloc(void* src, size_t cur_size, size_t size, size_t elem_size) {
+    void* ret = malloc(size * elem_size);
+	if (ret == NULL) {
+		perror("malloc");
+		exit(1);
+	}
+    if (src == 0) return ret;
+    ft_memcpy(ret, src, (cur_size > size ? size : cur_size) * elem_size);
     free(src);
     return ret;
+}
+
+bool check_root(char *path) {
+	if (ft_strncmp(path, "./", 3) == 3) return true;
+	return false;
+}
+
+long compare(t_file a, t_file b, t_flag flag) {
+	long ret;
+	if (flag.time == false) {
+		ret = ft_strncmp(check_root(a.name) == true ? "" : a.name, check_root(b.name) == true ? "" : b.name, max(a.name_len, b.name_len));
+	} else {
+		ret = b.stat.st_mtimespec.tv_sec - a.stat.st_mtimespec.tv_sec;
+		if (ret == 0) {
+			ret = ft_strncmp(check_root(a.name) == true ? "" : a.name, check_root(b.name) == true ? "" : b.name, max(a.name_len, b.name_len));
+		}
+	}
+	if (flag.reverse) ret *= -1;
+	return ret;
 }
 
 void swap(t_file *a, t_file *b) {
@@ -14,34 +37,45 @@ void swap(t_file *a, t_file *b) {
     *b = tmp;
 }
 
-void q_sort(t_file *file_list, int start, int end) {
+void q_sort(t_file *file_list, int start, int end, t_flag flag) {
     if (start >= end) return;
     int i = start + 1, j = end;
     while (i <= j) {
-        while (i <= end && ft_strncmp(file_list[i].name, file_list[start].name, max(file_list[i].name_len, file_list[start].name_len)) <= 0) i++;
-        while (j > start && ft_strncmp(file_list[j].name, file_list[start].name, max(file_list[j].name_len, file_list[start].name_len)) >= 0) j--;
+        while (i <= end && compare(file_list[i], file_list[start], flag) <= 0) i++;
+        while (j > start && compare(file_list[j], file_list[start], flag) >= 0) j--;
         
         if (i > j) swap(&file_list[start], &file_list[j]);
         else swap(&file_list[i], &file_list[j]);
     }
 
-    q_sort(file_list, start, j - 1);
-    q_sort(file_list, j + 1, end);
+    q_sort(file_list, start, j - 1, flag);
+    q_sort(file_list, j + 1, end, flag);
 }
 
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_putnbr_fd.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: eunrlee <eunrlee@student.42seoul.k>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/11 22:42:01 by eunrlee           #+#    #+#             */
-/*   Updated: 2022/11/12 12:11:17 by eunrlee          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+int compare_str(char *a, char *b) {
+	return ft_strncmp(check_root(a) == true ? "" : a, check_root(b) == true ? "" : b, max(ft_strlen(a), ft_strlen(b)));
+}
 
-#include"libft.h"
+void swap_str(char **a, char **b) {
+	char *tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+void q_sort_str(char **str, int start, int end) {
+	if (start >= end) return;
+    int i = start + 1, j = end;
+    while (i <= j) {
+        while (i <= end && compare_str(str[i], str[start]) <= 0) i++;
+        while (j > start && compare_str(str[j], str[start]) >= 0) j--;
+        
+        if (i > j) swap_str(&str[start], &str[j]);
+        else swap_str(&str[i], &str[j]);
+    }
+
+    q_sort_str(str, start, j - 1);
+    q_sort_str(str, j + 1, end);
+}
 
 void	ft_putllnbr_fd(long long n, int fd)
 {

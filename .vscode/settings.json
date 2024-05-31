@@ -12,6 +12,14 @@
         "utility": "c",
         "vector": "c",
         "typeinfo": "c",
-        "pwd.h": "c"
+        "pwd.h": "c",
+        "chrono": "c",
+        "ctime": "c",
+        "__locale": "c",
+        "__cxx_version": "c",
+        "__string": "c",
+        "tuple": "c",
+        "__config": "c",
+        "ostream": "c"
     }
 }
