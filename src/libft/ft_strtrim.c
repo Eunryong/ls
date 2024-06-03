@@ -14,9 +14,6 @@
 
 static size_t	ft_checkidx(char const *s1, char const *set, size_t idx)
 {
-	size_t	i;
-
-	i = idx;
 	if (idx == 0)
 	{
 		while (s1[idx] != '\0' && ft_strchr(set, s1[idx]))

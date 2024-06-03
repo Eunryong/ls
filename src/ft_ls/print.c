@@ -12,14 +12,17 @@ void print_dir(char *path, t_flag flag) {
         perror(path);
         return;
     }
+    
     if (flag.depth == 1) {
         write(1, path, ft_strlen(path));
         write(1, ":\n", 2);
     }
+
     if (path[ft_strlen(path) - 1] != '/') {
         path = ft_strjoin(path, "/");
         tmp = path;
     }
+
     while ((file = readdir(dir)) != NULL) {
         if (flag.all == false && file->d_name[0] == '.') {
             continue;

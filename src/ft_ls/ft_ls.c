@@ -1,13 +1,12 @@
 #include "ft_ls.h"
 
-
 void exec(int ac, char **av, t_flag flag) {
     t_file  *dir_list = NULL;
     int     dir_size = 0;
     t_file  *file_list = NULL;
     int     file_size = 0;
 
-    if (ac == 1 || (ac == 2 && flag.flag)) return print_dir("./", flag);
+    if (ac == 1 || (ac == 2 && flag.flag)) return print_dir("./", flag); // default
     
     for (int i = (flag.flag == true ? 2 : 1); i < ac; i++) {
         struct stat buf;

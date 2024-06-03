@@ -25,40 +25,54 @@ void print_permission(mode_t mode) {
             permission[j] /= 8;
         }
     }
+    write(1, "  ", 2);
 }
 
-void print_long_format(t_file file) {
+void print_nlink(nlink_t nlink) {
+    if (nlink < 10) write(1, " ", 1);
+    ft_putnbr_fd(nlink, 1); // link
+    write(1, " ", 1);
+}
+
+void print_pw(uid_t uid) {
     struct passwd *pw;
-    struct group *gr;
-    print_type(file.stat.st_mode);
-    print_permission(file.stat.st_mode); // permission
-    write(1, " ", 1);
-    if (file.stat.st_nlink < 10) write(1, " ", 1);
-    ft_putnbr_fd(file.stat.st_nlink, 1); // link
-    write(1, " ", 1);
-    pw = getpwuid(file.stat.st_uid);
+    pw = getpwuid(uid);
     write(1, pw ? pw->pw_name : "???", pw ? ft_strlen(pw->pw_name): 3);
     write(1, "  ", 2);
-    gr = getgrgid(file.stat.st_gid);
+}
+
+void print_gr(gid_t gid) {
+    struct group *gr;
+    gr = getgrgid(gid);
     write(1, gr ? gr->gr_name : "???", gr ? ft_strlen(gr->gr_name): 3);
     write(1, "  ", 2);
+}
+
+void print_size(off_t size) {
     int tmp = 10000;
-    while (tmp > file.stat.st_size) {
+    while (tmp > size) {
         write(1, " ", 1);
         tmp = tmp > 10 ? tmp / 10 : 0;
     }
-    ft_putllnbr_fd((long long)file.stat.st_size, 1);
+    ft_putllnbr_fd((long long)size, 1);
     write(1, " ", 1);
-    char *time_str = ctime(&file.stat.st_ctimespec.tv_sec);
+}
+
+void print_time(time_t time) {
+    char *time_str = ctime(&time);
     char *sub_time = ft_substr(time_str, 4, 13);
     sub_time[12] = 0;
     write(1, sub_time, ft_strlen(sub_time));
     write(1, " ", 1);
-    write(1, file.name, file.name_len);
-    if (S_ISLNK(file.stat.st_mode)) {
-        char buf[1024];
+    free(sub_time);
+}
+
+void print_name(char *name, uint16_t name_len, bool is_link) {
+    write(1, name, name_len);
+    char buf[1024];
+    if (is_link) {
         ssize_t len;
-        if ((len = readlink(file.name, buf, sizeof(buf))) == -1) {
+        if ((len = readlink(name, buf, sizeof(buf))) == -1) {
             perror("readlink");
             exit(1);
         }
@@ -67,5 +81,16 @@ void print_long_format(t_file file) {
         write(1, buf, ft_strlen(buf));
     }
     write(1, "\n", 1);
-    free(sub_time);
+}
+
+
+void print_long_format(t_file file) {
+    print_type(file.stat.st_mode);// type
+    print_permission(file.stat.st_mode); // permission
+    print_nlink(file.stat.st_nlink);// link
+    print_pw(file.stat.st_uid);// user
+    print_gr(file.stat.st_gid);// group
+    print_size(file.stat.st_size);// size
+    print_time(file.stat.st_ctimespec.tv_sec);// time
+    print_name(file.name, file.name_len, S_ISLNK(file.stat.st_mode));// name
 }

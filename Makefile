@@ -15,7 +15,7 @@ PWD := $(shell pwd)
 # Targets
 TARGET := ft_ls
 SRCEXT := c
-SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+SOURCES := $(shell find $(SRCDIR) -type f -name '*.$(SRCEXT)')
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 DEPS := $(OBJECTS:.o=.d)
 
@@ -27,7 +27,7 @@ all: $(TARGET)
 
 $(TARGET): $(LIBFT) $(OBJECTS)
 	@echo " Linking..."
-	$(CC) $^ $(INC) -o $(TARGET) $(FLAGS)
+	$(CC) $(OBJECTS) $(LIBFT) $(INC) -o $(TARGET) $(FLAGS)
 	@echo " Finished linking."
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
@@ -41,6 +41,7 @@ $(LIBFT) :
 clean:
 	@echo " Cleaning..."
 	make -C $(LIBFTDIR) fclean
+	rm -rf $(BUILDDIR)
 	$(RM) -r $(BUILDDIR) $(TARGETDIR)
 
 fclean: clean
