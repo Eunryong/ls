@@ -38,7 +38,7 @@ void exec(int ac, char **av, t_flag flag) {
     q_sort(dir_list, 0, dir_size - 1, flag);
     for (int i = 0; i < file_size; i++) {
         if (flag.long_list == true) {
-            print_long_format(file_list[i]);
+            print_long_format(file_list[i], NULL);
         } else {
             write(1, file_list[i].name, file_list[i].name_len);
             if (i == file_size - 1) {

@@ -7,6 +7,7 @@ void print_dir(char *path, t_flag flag) {
     int             size = 0;
     int             block = 0;
     char            *tmp = NULL;
+    t_max           max_len = {0, 0, 0, 0};
 
     if ((dir = opendir(path)) == NULL) {
         perror(path);
@@ -56,7 +57,7 @@ void print_dir(char *path, t_flag flag) {
     if (flag.long_list) print_total(block);
     for (int i = 0; i < size; i++) {
         if (flag.long_list == true) {
-            print_long_format(file_list[i]);
+            print_long_format(file_list[i], path);
         } else {
             write(1, file_list[i].name, ft_strlen(file_list[i].name));
             if (i == size - 1) {

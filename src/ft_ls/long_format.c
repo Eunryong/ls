@@ -71,24 +71,30 @@ void print_time(time_t time) {
     free(sub_time);
 }
 
-void print_name(char *name, uint16_t name_len, bool is_link) {
+void print_name(char *name, uint16_t name_len, bool is_link, char *path) {
     write(1, name, name_len);
     char buf[1024];
     if (is_link) {
         ssize_t len;
+        if (path) {
+            name = ft_strjoin(path, name);
+        }
         if ((len = readlink(name, buf, sizeof(buf))) == -1) {
-            perror("readlink");
+            perror(name);
             exit(1);
         }
         buf[len] = 0;
         write(1, " -> ", 4);
         write(1, buf, ft_strlen(buf));
+        if (path) {
+            free(name);
+        }
     }
     write(1, "\n", 1);
 }
 
 
-void print_long_format(t_file file) {
+void print_long_format(t_file file, char *path) {
     print_type(file.stat.st_mode);// type
     print_permission(file.stat.st_mode); // permission
     print_nlink(file.stat.st_nlink);// link
@@ -96,5 +102,5 @@ void print_long_format(t_file file) {
     print_gr(file.stat.st_gid);// group
     print_size(file.stat.st_size);// size
     print_time(file.stat.st_ctimespec.tv_sec);// time
-    print_name(file.name, file.name_len, S_ISLNK(file.stat.st_mode));// name
+    print_name(file.name, file.name_len, S_ISLNK(file.stat.st_mode), path);// name
 }
