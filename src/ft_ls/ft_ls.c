@@ -18,10 +18,18 @@ void exec(int ac, char **av, t_flag flag) {
             dir_size++;
             dir_list = ft_realloc(dir_list, dir_size - 1, dir_size, sizeof(t_file));
             dir_list[dir_size - 1].name = ft_strdup(av[i]);
+            if (dir_list[dir_size - 1].name == NULL) {
+                perror("malloc");
+                exit(1);
+            }
         } else {
             file_size++;
             file_list = ft_realloc(file_list, file_size - 1, file_size, sizeof(t_file));
             file_list[file_size - 1].name = ft_strdup(av[i]);
+            if (file_list[file_size - 1].name == NULL) {
+                perror("malloc");
+                exit(1);
+            }
             file_list[file_size - 1].name_len = ft_strlen(file_list[file_size - 1].name);
             file_list[file_size - 1].stat = buf;
         }

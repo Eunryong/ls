@@ -61,6 +61,10 @@ void print_size(off_t size) {
 void print_time(time_t time) {
     char *time_str = ctime(&time);
     char *sub_time = ft_substr(time_str, 4, 13);
+    if (sub_time == NULL) {
+        perror("malloc");
+        exit(1);
+    }
     sub_time[12] = 0;
     write(1, sub_time, ft_strlen(sub_time));
     write(1, " ", 1);

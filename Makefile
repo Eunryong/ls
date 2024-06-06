@@ -41,8 +41,7 @@ $(LIBFT) :
 clean:
 	@echo " Cleaning..."
 	make -C $(LIBFTDIR) fclean
-	rm -rf $(BUILDDIR)
-	$(RM) -r $(BUILDDIR) $(TARGETDIR)
+	$(RM) -r $(BUILDDIR)
 
 fclean: clean
 	rm -rf $(TARGET)

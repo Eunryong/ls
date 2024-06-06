@@ -20,6 +20,10 @@ void print_dir(char *path, t_flag flag) {
 
     if (path[ft_strlen(path) - 1] != '/') {
         path = ft_strjoin(path, "/");
+        if (path == NULL) {
+            perror("malloc");
+            exit(1);
+        }
         tmp = path;
     }
 
@@ -30,6 +34,10 @@ void print_dir(char *path, t_flag flag) {
         size++;
         file_list = ft_realloc(file_list, size - 1, size, sizeof(t_file));
         char *path_file = ft_strjoin(path, file->d_name);
+        if (path_file == NULL) {
+            perror("malloc");
+            exit(1);
+        }
         if (lstat(path_file, &file_list[size - 1].stat) == -1) {
             perror(path_file);
             free(path_file);
@@ -65,6 +73,10 @@ void print_dir(char *path, t_flag flag) {
                 flag.depth = 1;
                 write(1, "\n", 1);
                 char *new_path = ft_strjoin(path, file_list[i].name);
+                if (new_path == NULL) {
+                    perror("malloc");
+                    exit(1);
+                }
                 print_dir(new_path, flag);
                 free(new_path);
             }
