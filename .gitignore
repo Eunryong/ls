@@ -1,5 +1,5 @@
 build
 **/*.o
-ft_ls
+/ft_ls
 **/.a
 .vscode
