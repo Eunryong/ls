@@ -6,101 +6,190 @@ void print_total(int block) {
     write(1, "\n", 1);
 }
 
-ssize_t print_type(mode_t mode) {
-    if (S_ISDIR(mode)) return write(1, "d", 1);
-    if (S_ISLNK(mode)) return write(1, "l", 1);
-    if (S_ISCHR(mode)) return write(1, "c", 1);
-    if (S_ISBLK(mode)) return write(1, "b", 1);
-    if (S_ISFIFO(mode)) return write(1, "p", 1);
-    if (S_ISSOCK(mode)) return write(1, "s", 1);
-    return write(1, "-", 1);
-}
-
-void print_permission(mode_t mode) {
-    int permission[3] = {256, 128, 64};
-    char *rwx[3] = {"r", "w", "x"};
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            write(1, (mode & permission[j] ? rwx[j] : "-"), 1);
-            permission[j] /= 8;
-        }
-    }
-    write(1, "  ", 2);
-}
-
-void print_nlink(nlink_t nlink) {
-    if (nlink < 10) write(1, " ", 1);
-    ft_putnbr_fd(nlink, 1); // link
-    write(1, " ", 1);
-}
-
-void print_pw(uid_t uid) {
-    struct passwd *pw;
-    pw = getpwuid(uid);
-    write(1, pw ? pw->pw_name : "???", pw ? ft_strlen(pw->pw_name): 3);
-    write(1, "  ", 2);
-}
-
-void print_gr(gid_t gid) {
-    struct group *gr;
-    gr = getgrgid(gid);
-    write(1, gr ? gr->gr_name : "???", gr ? ft_strlen(gr->gr_name): 3);
-    write(1, "  ", 2);
-}
-
-void print_size(off_t size) {
-    int tmp = 10000;
-    while (tmp > size) {
-        write(1, " ", 1);
-        tmp = tmp > 10 ? tmp / 10 : 0;
-    }
-    ft_putllnbr_fd((long long)size, 1);
-    write(1, " ", 1);
-}
-
-void print_time(time_t time) {
-    char *time_str = ctime(&time);
-    char *sub_time = ft_substr(time_str, 4, 13);
-    if (sub_time == NULL) {
+char *make_type(mode_t mode) {
+    char *ret = malloc(sizeof(char) * 2);
+    if (!ret) {
         perror("malloc");
         exit(1);
     }
-    sub_time[12] = 0;
-    write(1, sub_time, ft_strlen(sub_time));
-    write(1, " ", 1);
-    free(sub_time);
+    ret[1] = 0;
+    ret[0] = '-';
+    if (S_ISDIR(mode)) ret[0] = 'd';
+    if (S_ISLNK(mode)) ret[0] = 'l';
+    if (S_ISCHR(mode)) ret[0] = 'c';
+    if (S_ISBLK(mode)) ret[0] = 'b';
+    if (S_ISFIFO(mode)) ret[0] = 'p';
+    if (S_ISSOCK(mode)) ret[0] = 's';
+    return ret;
 }
 
-void print_name(char *name, uint16_t name_len, bool is_link, char *path) {
-    write(1, name, name_len);
+char *make_permission(mode_t mode) {
+    char *ret = malloc(sizeof(char) * 10);
+    if (!ret) {
+        perror("malloc");
+        exit(1);
+    }
+    ret[9] = 0;
+    int permission[3] = {256, 128, 64};
+    char rwx[3] = {'r', 'w', 'x'};
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            ret[i * 3 + j] = mode & permission[j] ? rwx[j] : '-';
+            permission[j] /= 8;
+        }
+    }
+    return ret;
+}
+
+char *make_nlink(nlink_t nlink, size_t *len) {
+    char *ret = ft_itoa(nlink);
+    if (!ret) {
+        perror("malloc");
+        exit(1);
+    }
+    *len = max(*len, ft_strlen(ret));
+    return ret;
+}
+
+char *make_pw(uid_t uid, size_t *len) {
+    struct passwd *pw;
+    char *ret = NULL;
+    pw = getpwuid(uid);
+    ret  = ft_strdup(pw ? pw->pw_name : "???");
+    if (!ret) {
+        perror("malloc");
+        exit(1);
+    }
+    *len = max(*len, pw ? ft_strlen(pw->pw_name) : 3);
+    return ret;
+}
+
+char *make_gr(gid_t gid, size_t *len) {
+    struct group *gr;
+    char *ret = NULL;
+    gr = getgrgid(gid);
+    ret  = ft_strdup(gr ? gr->gr_name : "???");
+    if (!ret) {
+        perror("malloc");
+        exit(1);
+    }
+    *len = max(*len, gr ? ft_strlen(gr->gr_name) : 3);
+    return ret;
+}
+
+char *make_size(off_t size, size_t *len) {
+    char *ret = ft_lltoa(size);
+    if (!ret) {
+        perror("malloc");
+        exit(1);
+    }
+    *len = max(*len, ft_strlen(ret));
+    return ret;
+}
+
+char *make_time(time_t time) {
+    char *time_str = ctime(&time);
+    char *ret = ft_substr(time_str, 4, 13);
+    if (ret == NULL) {
+        perror("malloc");
+        exit(1);
+    }
+    ret[12] = 0;
+    return ret;
+}
+
+char *make_name(char *name, bool is_link, char *path) {
+    char *ret = ft_strdup(name);
+    if (!ret) {
+        perror("malloc");
+        return 0;
+    }
     char buf[1024];
     if (is_link) {
         ssize_t len;
         if (path) {
             name = ft_strjoin(path, name);
+            if (!name) {
+                perror("malloc");
+                return 0;
+            }
         }
         if ((len = readlink(name, buf, sizeof(buf))) == -1) {
             perror(name);
             exit(1);
         }
         buf[len] = 0;
-        write(1, " -> ", 4);
-        write(1, buf, ft_strlen(buf));
+        char *tmp = ret;
+        ret = ft_strjoin(ret, " -> ");
+        if (!ret) {
+            perror("malloc");
+            return 0;
+        }
+        free(tmp);
+        tmp = ret;
+        ret = ft_strjoin(ret, buf);
+        if (!ret) {
+            perror("malloc");
+            return 0;
+        }
         if (path) {
             free(name);
         }
+        free(tmp);
     }
-    write(1, "\n", 1);
+    return ret;
 }
 
+t_long_format make_long_format(t_file file, char *path, t_len *lens) {
+    t_long_format format;
+    format.type = make_type(file.stat.st_mode);// type
+    format.permission = make_permission(file.stat.st_mode); // permission
+    format.nlink = make_nlink(file.stat.st_nlink, &lens->link);// link
+    format.pw = make_pw(file.stat.st_uid, &lens->pw);// user
+    format.gr = make_gr(file.stat.st_gid, &lens->gr);// group
+    format.size = make_size(file.stat.st_size, &lens->size);// size
+    format.time = make_time(file.stat.st_ctimespec.tv_sec);// time
+    format.name = make_name(file.name, S_ISLNK(file.stat.st_mode), path);// name
+    return format;
+}
 
-void print_long_format(t_file file, char *path) {
-    print_type(file.stat.st_mode);// type
-    print_permission(file.stat.st_mode); // permission
-    print_nlink(file.stat.st_nlink);// link
-    print_pw(file.stat.st_uid);// user
-    print_gr(file.stat.st_gid);// group
-    print_size(file.stat.st_size);// size
-    print_time(file.stat.st_ctimespec.tv_sec);// time
-    print_name(file.name, file.name_len, S_ISLNK(file.stat.st_mode), path);// name
+void print_long_formats(t_long_format *formats, int size, t_len lens) {
+    for (int i = 0; i < size; i++) {
+        write(1, formats[i].type, 1);
+        write(1, formats[i].permission, 9);
+        free(formats[i].type);
+        free(formats[i].permission);
+        print_space(2);
+
+        print_space(lens.link - ft_strlen(formats[i].nlink));
+        write(1, formats[i].nlink, ft_strlen(formats[i].nlink));
+        free(formats[i].nlink);
+
+        print_space(1);
+
+        write(1, formats[i].pw, ft_strlen(formats[i].pw));
+        print_space(lens.pw - ft_strlen(formats[i].pw));
+        free(formats[i].pw);
+
+        print_space(2);
+
+        write(1, formats[i].gr, ft_strlen(formats[i].gr));
+        print_space(lens.gr - ft_strlen(formats[i].gr));
+        free(formats[i].gr);
+
+        print_space(2);
+
+        print_space(lens.size - ft_strlen(formats[i].size));
+        write(1, formats[i].size, ft_strlen(formats[i].size));
+        free(formats[i].size);
+
+        print_space(1);
+        write(1, formats[i].time, ft_strlen(formats[i].time));
+        free(formats[i].time);
+
+        print_space(1);
+        write(1, formats[i].name, ft_strlen(formats[i].name));
+        free(formats[i].name);
+        write(1, "\n", 1);
+    }
 }

@@ -5,6 +5,8 @@ void exec(int ac, char **av, t_flag flag) {
     int     dir_size = 0;
     t_file  *file_list = NULL;
     int     file_size = 0;
+    t_long_format *formats = NULL;
+    t_len   lens = {0, 0, 0, 0};
 
     if (ac == 1 || (ac == 2 && flag.flag)) return print_dir("./", flag); // default
     
@@ -36,9 +38,12 @@ void exec(int ac, char **av, t_flag flag) {
     }
     q_sort(file_list, 0, file_size - 1, flag);
     q_sort(dir_list, 0, dir_size - 1, flag);
+    if (flag.long_list) {
+        formats = (t_long_format *)malloc(file_size * sizeof(t_long_format));
+    }
     for (int i = 0; i < file_size; i++) {
         if (flag.long_list == true) {
-            print_long_format(file_list[i], NULL);
+            formats[i] = make_long_format(file_list[i], NULL, &lens);
         } else {
             write(1, file_list[i].name, file_list[i].name_len);
             if (i == file_size - 1) {
@@ -48,9 +53,13 @@ void exec(int ac, char **av, t_flag flag) {
             }
         }
     }
+    if (formats != NULL) {
+        print_long_formats(formats, file_size, lens);
+        free(formats);
+    }
     for (int i = 0; i < dir_size; i++) {
         if (flag.depth) write(1, "\n", 1);
-        flag.depth = 1;
+        if (dir_size != 1) flag.depth = 1;
         print_dir(dir_list[i].name, flag);
     }
     for (int i = 0; i < file_size || i < dir_size; i++) {
@@ -68,6 +77,6 @@ void ft_ls(int ac, char **av) {
         write(2, ARG_ERROR, sizeof(ARG_ERROR));
         exit(1);
     }
-    q_sort_str(av, flag.flag? 2 : 1, ac - 1);
+    q_sort_str(av, flag.flag? 2 : 1, ac - 1, flag);
     exec(ac, av, flag);
 }

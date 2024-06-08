@@ -13,7 +13,7 @@ void* ft_realloc(void* src, size_t cur_size, size_t size, size_t elem_size) {
 }
 
 bool check_root(char *path) {
-	if (ft_strncmp(path, "./", 3) == 3) return true;
+	if (ft_strncmp(path, "./", 3) == 0) return true;
 	return false;
 }
 
@@ -52,8 +52,10 @@ void q_sort(t_file *file_list, int start, int end, t_flag flag) {
     q_sort(file_list, j + 1, end, flag);
 }
 
-int compare_str(char *a, char *b) {
-	return ft_strncmp(check_root(a) == true ? "" : a, check_root(b) == true ? "" : b, max(ft_strlen(a), ft_strlen(b)));
+int compare_str(char *a, char *b, t_flag flag) {
+	int ret = ft_strncmp(check_root(a) == true ? "" : a, check_root(b) == true ? "" : b, max(ft_strlen(a), ft_strlen(b)));
+	if (flag.reverse) ret *= -1;
+	return ret;
 }
 
 void swap_str(char **a, char **b) {
@@ -62,41 +64,76 @@ void swap_str(char **a, char **b) {
 	*b = tmp;
 }
 
-void q_sort_str(char **str, int start, int end) {
+void q_sort_str(char **str, int start, int end, t_flag flag) {
 	if (start >= end) return;
     int i = start + 1, j = end;
     while (i <= j) {
-        while (i <= end && compare_str(str[i], str[start]) <= 0) i++;
-        while (j > start && compare_str(str[j], str[start]) >= 0) j--;
+        while (i <= end && compare_str(str[i], str[start], flag) <= 0) i++;
+        while (j > start && compare_str(str[j], str[start], flag) >= 0) j--;
         
         if (i > j) swap_str(&str[start], &str[j]);
         else swap_str(&str[i], &str[j]);
     }
 
-    q_sort_str(str, start, j - 1);
-    q_sort_str(str, j + 1, end);
+    q_sort_str(str, start, j - 1, flag);
+    q_sort_str(str, j + 1, end, flag);
 }
 
-void	ft_putllnbr_fd(long long n, int fd)
+
+
+static size_t	ft_lltoalen(long long n)
 {
-	char	c;
+	size_t	len;
+
+	len = 0;
+	if (n < 0)
+	{
+		len++;
+		n *= -1;
+	}
+	while (n > 0)
+	{
+		len++;
+		n /= 10;
+	}
+	return (len);
+}
+
+static void	set_str(char *str, long long n, size_t len)
+{
+	if (n < 0)
+	{
+		str[0] = '-';
+		n *= -1;
+	}
+	str[len] = '\0';
+	while (n > 0)
+	{
+		str[len - 1] = (n % 10) + '0';
+		n /= 10;
+		len--;
+	}
+}
+
+char	*ft_lltoa(long long n)
+{
+	size_t	len;
+	char	*str;
 
 	if (n == LLONG_MIN)
-		write(fd, "-9223372036854775808", 20);
-	else if (n < 0)
-	{
-		n *= -1;
-		write(fd, "-", 1);
-		ft_putnbr_fd(n, fd);
-	}
-	else if (n < 10)
-	{
-		c = n % 10 + '0';
-		write(fd, &c, 1);
-	}
-	else
-	{
-		ft_putnbr_fd(n / 10, fd);
-		ft_putnbr_fd(n % 10, fd);
+		return (ft_strdup("-9223372036854775808"));
+	if (n == 0)
+		return (ft_strdup("0"));
+	len = ft_lltoalen(n);
+	str = (char *)malloc(sizeof(char) * (len + 1));
+	if (!str)
+		return (0);
+	set_str(str, n, len);
+	return (str);
+}
+
+void print_space(int len) {
+	for (int i = 0; i < len; i++) {
+		write(1, " ", 1);
 	}
 }

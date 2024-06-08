@@ -7,7 +7,8 @@ void print_dir(char *path, t_flag flag) {
     int             size = 0;
     int             block = 0;
     char            *tmp = NULL;
-    t_max           max_len = {0, 0, 0, 0};
+    t_long_format   *formats = NULL;
+    t_len           lens = {0, 0, 0, 0};
 
     if ((dir = opendir(path)) == NULL) {
         perror(path);
@@ -54,10 +55,13 @@ void print_dir(char *path, t_flag flag) {
         free(path_file);
     }
     q_sort(file_list, 0, size - 1, flag);
-    if (flag.long_list) print_total(block);
+    if (flag.long_list) {
+        print_total(block);
+        formats = (t_long_format *)malloc(size * sizeof(t_long_format));
+    }
     for (int i = 0; i < size; i++) {
         if (flag.long_list == true) {
-            print_long_format(file_list[i], path);
+            formats[i] = make_long_format(file_list[i], path, &lens);
         } else {
             write(1, file_list[i].name, ft_strlen(file_list[i].name));
             if (i == size - 1) {
@@ -66,6 +70,10 @@ void print_dir(char *path, t_flag flag) {
                 write(1, "  ", 2);
             }
         }
+    }
+    if (formats != NULL) {
+        print_long_formats(formats, size, lens);
+        free(formats);
     }
     if (flag.recursive == true) {
         for (int i = 0; i < size; i++) {
