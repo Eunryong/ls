@@ -2,3 +2,4 @@ build
 **/*.o
 ft_ls
 **/.a
+.vscode
