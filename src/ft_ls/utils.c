@@ -17,7 +17,7 @@ long compare(t_file a, t_file b, t_flag flag) {
 	if (flag.time == false) {
 		ret = ft_strncmp(a.name, b.name, max(a.name_len, b.name_len));
 	} else {
-		ret = b.stat.st_mtimespec.tv_sec - a.stat.st_mtimespec.tv_sec;
+		ret = (b.stat.st_mtimespec.tv_sec * 100000000 + b.stat.st_mtimespec.tv_nsec) - (a.stat.st_mtimespec.tv_sec * 100000000 + a.stat.st_mtimespec.tv_nsec);
 		if (ret == 0) {
 			ret = ft_strncmp(a.name, b.name, max(a.name_len, b.name_len));
 		}

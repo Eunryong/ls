@@ -35,8 +35,17 @@ char *make_permission(mode_t mode) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             ret[i * 3 + j] = mode & permission[j] ? rwx[j] : '-';
-            permission[j] /= 8;
+            permission[j] >>= 3;
         }
+    }
+    if (mode & S_ISUID) {
+        ret[2] = (mode & S_IXUSR) ? 's' : 'S';
+    }
+    if (mode & S_ISGID) {
+        ret[5] = (mode & S_IXGRP) ? 's' : 'S';
+    }
+    if (mode & S_ISVTX) {
+        ret[8] = (mode & S_IXOTH) ? 't' : 'T';
     }
     return ret;
 }
