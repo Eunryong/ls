@@ -23,7 +23,7 @@ typedef struct s_flag {
     bool    all;       // print
     bool    reverse;   // sort
     bool    time;      // sort
-    bool    flag; 
+    int     flag; 
     int     depth;
 }   t_flag;
 

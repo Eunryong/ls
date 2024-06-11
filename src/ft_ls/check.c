@@ -22,7 +22,7 @@ bool flag_check(char *av, t_flag *flag) {
                 default:
                     return false;
             }
-            flag->flag = true;
+            flag->flag++;
         }
     }
     return true;
@@ -30,7 +30,10 @@ bool flag_check(char *av, t_flag *flag) {
 
 bool check_argv(int ac, char **av, t_flag *flag) {
     if (ac == 1) return true;
-    if (flag_check(av[1], flag) == 0)
-        return false;
+    for (int i = 1; i < ac; i++) {
+        if (av[i][0] != '-') break;
+        if (flag_check(av[i], flag) == 0)
+            return false;
+    }
     return true;
 }

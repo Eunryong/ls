@@ -8,9 +8,9 @@ void exec(int ac, char **av, t_flag flag) {
     t_long_format *formats = NULL;
     t_len   lens = {0, 0, 0, 0};
 
-    if (ac == 1 || (ac == 2 && flag.flag)) return print_dir("./", flag); // default
+    if (ac == flag.flag + 1) return print_dir("./", flag); // default
     
-    for (int i = (flag.flag == true ? 2 : 1); i < ac; i++) {
+    for (int i = flag.flag + 1; i < ac; i++) {
         struct stat buf;
         if (lstat(av[i], &buf) == -1) {
             perror(av[i]);
@@ -77,6 +77,6 @@ void ft_ls(int ac, char **av) {
         write(2, ARG_ERROR, sizeof(ARG_ERROR));
         exit(1);
     }
-    q_sort_str(av, flag.flag? 2 : 1, ac - 1, flag);
+    q_sort_str(av, flag.flag + 1, ac - 1, flag);
     exec(ac, av, flag);
 }
