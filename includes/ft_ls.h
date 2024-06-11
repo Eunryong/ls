@@ -60,7 +60,6 @@ void            q_sort(t_file *file_list, int start, int end, t_flag flag);
 void            q_sort_str(char **str, int start, int end, t_flag flag);
 char	        *ft_lltoa(long long n);
 void            print_space(int len);
-bool            check_root(char *path);
 
 // long format
 t_long_format   make_long_format(t_file file, char *path, t_len *lens);

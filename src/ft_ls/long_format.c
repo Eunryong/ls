@@ -98,12 +98,11 @@ char *make_size(off_t size, size_t *len) {
 
 char *make_time(time_t time) {
     char *time_str = ctime(&time);
-    char *ret = ft_substr(time_str, 4, 13);
+    char *ret = ft_substr(time_str, 4, 12);
     if (ret == NULL) {
         perror("malloc");
         exit(1);
     }
-    ret[12] = 0;
     return ret;
 }
 
